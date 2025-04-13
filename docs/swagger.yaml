@@ -1,0 +1,497 @@
+basePath: /
+definitions:
+  entity.Group:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      parent_id:
+        type: integer
+      subGroups:
+        items:
+          $ref: '#/definitions/entity.Group'
+        type: array
+    type: object
+  entity.Student:
+    properties:
+      email:
+        description: Email is omitted in responses as per requirements
+        type: string
+      group_id:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  entity.Translation:
+    properties:
+      destination:
+        example: en
+        type: string
+      original:
+        example: текст для перевода
+        type: string
+      source:
+        example: auto
+        type: string
+      translation:
+        example: text for translation
+        type: string
+    type: object
+  v1.createGroupRequest:
+    properties:
+      name:
+        type: string
+      parent_id:
+        type: integer
+    required:
+    - name
+    type: object
+  v1.createStudentRequest:
+    properties:
+      email:
+        type: string
+      group_id:
+        type: integer
+      name:
+        type: string
+    required:
+    - email
+    - group_id
+    - name
+    type: object
+  v1.doTranslateRequest:
+    properties:
+      destination:
+        example: en
+        type: string
+      original:
+        example: текст для перевода
+        type: string
+      source:
+        example: auto
+        type: string
+    required:
+    - destination
+    - original
+    - source
+    type: object
+  v1.historyResponse:
+    properties:
+      history:
+        items:
+          $ref: '#/definitions/entity.Translation'
+        type: array
+    type: object
+  v1.response:
+    properties:
+      error:
+        example: message
+        type: string
+    type: object
+  v1.updateGroupRequest:
+    properties:
+      name:
+        type: string
+      parent_id:
+        type: integer
+    required:
+    - name
+    type: object
+  v1.updateStudentRequest:
+    properties:
+      group_id:
+        type: integer
+      name:
+        type: string
+    required:
+    - group_id
+    - name
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: RESTful API for managing students and academic groups
+  title: Educational Institution API
+  version: "1.0"
+paths:
+  /groups:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all academic groups with their subgroups
+      operationId: get-groups
+      parameters:
+      - description: Search query
+        in: query
+        name: query
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.Group'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.response'
+      summary: Get all groups
+      tags:
+      - groups
+    post:
+      consumes:
+      - application/json
+      description: Add a new academic group
+      operationId: create-group
+      parameters:
+      - description: Group data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.createGroupRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entity.Group'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/v1.response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.response'
+      summary: Create a group
+      tags:
+      - groups
+  /groups/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove an academic group from the system
+      operationId: delete-group
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/v1.response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/v1.response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/v1.response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.response'
+      summary: Delete group
+      tags:
+      - groups
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a specific academic group by ID
+      operationId: get-group-by-id
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Group'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/v1.response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/v1.response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.response'
+      summary: Get group by ID
+      tags:
+      - groups
+    put:
+      consumes:
+      - application/json
+      description: Update an academic group's information
+      operationId: update-group
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated group data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.updateGroupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Group'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/v1.response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/v1.response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.response'
+      summary: Update group
+      tags:
+      - groups
+  /students:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all students
+      operationId: get-students
+      parameters:
+      - description: Search query
+        in: query
+        name: query
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.Student'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.response'
+      summary: Get all students
+      tags:
+      - students
+    post:
+      consumes:
+      - application/json
+      description: Add a new student to the system
+      operationId: create-student
+      parameters:
+      - description: Student data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.createStudentRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entity.Student'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/v1.response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.response'
+      summary: Create a student
+      tags:
+      - students
+  /students/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove a student from the system
+      operationId: delete-student
+      parameters:
+      - description: Student ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/v1.response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/v1.response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.response'
+      summary: Delete student
+      tags:
+      - students
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a specific student by ID
+      operationId: get-student-by-id
+      parameters:
+      - description: Student ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Student'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/v1.response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/v1.response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.response'
+      summary: Get student by ID
+      tags:
+      - students
+    put:
+      consumes:
+      - application/json
+      description: Update a student's information
+      operationId: update-student
+      parameters:
+      - description: Student ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated student data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.updateStudentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Student'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/v1.response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/v1.response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.response'
+      summary: Update student
+      tags:
+      - students
+  /translation/do-translate:
+    post:
+      consumes:
+      - application/json
+      description: Translate a text
+      operationId: do-translate
+      parameters:
+      - description: Set up translation
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.doTranslateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Translation'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/v1.response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.response'
+      summary: Translate
+      tags:
+      - translation
+  /translation/history:
+    get:
+      consumes:
+      - application/json
+      description: Show all translation history
+      operationId: history
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.historyResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.response'
+      summary: Show history
+      tags:
+      - translation
+swagger: "2.0"
